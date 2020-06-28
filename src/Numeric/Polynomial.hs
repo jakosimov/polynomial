@@ -28,13 +28,17 @@ showRational q
 
 instance Show PTerm where
   show (PTerm c d) = prefix ++ postfix
-    where prefix  = if c == 1 && d /= 0 then "" else showRational c
+    where prefix
+            | c == 1 && d /= 0    = ""
+            | c == (-1) && d /= 0 = "-"
+            | otherwise           = showRational c
           postfix
             | d == 0     = ""
             | d == 1     = "x"
             | otherwise  = "x" ++ exponent
             where exponent     = map asExponent (show d)
                   asExponent c
+                    | c == '1'            = '\185'
                     | c == '2'            = '\178'
                     | c == '3'            = '\179'
                     | c `elem` ['4'..'9'] = chr $ ord c + 8256
