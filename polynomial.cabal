@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5e812dbd0097ff140c7426f52836546fbbf4a72f466a6eb27ce21adef7479ba7
+-- hash: 338653a9693fa4037fa0895f737fc034677a9a7407902c193726d42e3aa10432
 
 name:           polynomial
 version:        0.1.0.0
@@ -34,18 +34,6 @@ library
       src
   build-depends:
       base >=4.7 && <5
-  default-language: Haskell2010
-
-executable polynomial-exe
-  main-is: Main.hs
-  other-modules:
-      Paths_polynomial
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , polynomial
   default-language: Haskell2010
 
 test-suite polynomial-test

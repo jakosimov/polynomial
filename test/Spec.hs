@@ -23,6 +23,6 @@ main :: IO ()
 main =
   do let result = basicTests
      case findIndex not result of
-       Nothing -> putStrLn " All tests passed!"
+       Nothing -> putStrLn "All tests passed!"
        Just n  -> putStrLn $ " Test [" ++ show n ++ "] failed!"
 
