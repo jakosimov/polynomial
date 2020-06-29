@@ -3,63 +3,20 @@ module Numeric.Polynomial
   , degree
   , nullPolynomial
   , termsOf
-  , CoeffType
   , quotientRemainder
   , (</>)
   , (<%>)
   , greatestCommonDivisor
   , normalize
+  , PolynomialRatio
+  , over
+  , numerator
+  , denominator
   ) where
-
+import Numeric.PTerm
 import Data.List (foldl', sort)
-import Data.Char (ord, chr)
-import Data.Ratio (denominator, numerator)
 
-type CoeffType = Rational
-
-data PTerm = PTerm CoeffType Int deriving Eq
-
-showRational :: Rational -> String
-showRational q
-  | d == 1    = show n
-  | otherwise = "(" ++ show n ++ "/" ++ show d ++ ")"
-  where d = denominator q
-        n = numerator q
-
-instance Show PTerm where
-  show (PTerm c d) = prefix ++ postfix
-    where prefix
-            | c == 1 && d /= 0    = ""
-            | c == (-1) && d /= 0 = "-"
-            | otherwise           = showRational c
-          postfix
-            | d == 0     = ""
-            | d == 1     = "x"
-            | otherwise  = "x" ++ exponent
-            where exponent     = map asExponent (show d)
-                  asExponent c
-                    | c == '1'            = '\185'
-                    | c == '2'            = '\178'
-                    | c == '3'            = '\179'
-                    | c `elem` ['4'..'9'] = chr $ ord c + 8256
-                    | otherwise           = c
-
-instance Ord PTerm where
-  compare (PTerm c d) (PTerm c' d')
-    | d == d'   = compare c c'
-    | otherwise = compare d d'
-
-multiply :: PTerm -> PTerm -> PTerm
-multiply (PTerm c d) (PTerm c' d') = PTerm (c*c') (d+d')
-
-termSignum (PTerm c _)
-  | c > 0     = 1
-  | c < 0     = -1
-  | otherwise = 0
-
-negateTerm (PTerm c d) = PTerm (-c) d
-
-data Polynomial = Term CoeffType Int
+data Polynomial = Term Rational Int
                 | Expr [PTerm]
 
 instance Show Polynomial where
@@ -159,3 +116,52 @@ greatestCommonDivisor p q
   | degree q <= 0       = p
   | otherwise           = greatestCommonDivisor q (normalize $ p <%> q)
 
+data PolynomialRatio = PolynomialRatio Polynomial Polynomial
+
+simplify :: PolynomialRatio -> PolynomialRatio
+simplify (PolynomialRatio p q) = PolynomialRatio p' q'
+  where divisor = greatestCommonDivisor p q
+        p'      = p </> divisor
+        q'      = q </> divisor
+
+over :: Polynomial -> Polynomial -> PolynomialRatio
+p `over` q = simplify (PolynomialRatio p q)
+
+centreText :: Int -> String -> String
+centreText n s = padding ++ s ++ padding
+  where padding = take paddingLength $ repeat ' '
+        paddingLength = (n - length s) `quot` 2
+
+numerator :: PolynomialRatio -> Polynomial
+numerator (PolynomialRatio p _) = p
+
+denominator :: PolynomialRatio -> Polynomial
+denominator (PolynomialRatio _ q) = q
+
+instance Show PolynomialRatio where
+  show (PolynomialRatio p q) = pString' ++ "\n" ++ divisor ++ "\n" ++ qString
+    where pString' = centreText length' pString
+          qString' = centreText length' qString
+          divisor  = take length' $ repeat '-'
+          length'  = max (length pString) (length qString)
+          pString  = show p
+          qString  = show q
+
+instance Num PolynomialRatio where
+  (PolynomialRatio p q) + (PolynomialRatio p' q') = PolynomialRatio numerator denominator
+    where gcd         = greatestCommonDivisor q q'
+          multiple    = q' </> gcd
+          multiple'   = q </> gcd
+          numerator   = p * multiple + p' * multiple'
+          denominator = multiple * multiple' * gcd
+
+  negate (PolynomialRatio p q) = PolynomialRatio (negate p) q
+
+  signum (PolynomialRatio p _) = PolynomialRatio (signum p) 1
+
+  (PolynomialRatio p q) * (PolynomialRatio p' q') = PolynomialRatio (p*p') (q*q')
+
+  abs (PolynomialRatio p q) = PolynomialRatio (abs p) q
+
+  fromInteger n = PolynomialRatio (fromInteger n) 1
+        

@@ -24,6 +24,8 @@ dependencies:
 
 library:
   source-dirs: src
+  exposed-modules: Numeric.Polynomial
+
 
 tests:
   polynomial-test:
@@ -35,3 +37,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - polynomial
+    - hspec
