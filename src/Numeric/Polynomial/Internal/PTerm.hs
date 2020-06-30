@@ -1,4 +1,4 @@
-module Numeric.PTerm where
+module Numeric.Polynomial.Internal.PTerm where
 
 import Data.Char (ord, chr)
 import qualified Data.Ratio as Ratio (denominator, numerator)

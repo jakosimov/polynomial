@@ -44,7 +44,11 @@ main = hspec $ do
       let f' = Term 3 5 + Term 6 4 + Term 8 3 + Term 13 2 + Term 11 1 + 3
           g' = Term 2 4 + Term 10 3 + Term 17 2 + Term 12 1 + 3
       greatestCommonDivisor f' g' `shouldBe` (Term 1 2 + Term 2 1 + 1)
-      
-      
-    
+
+  describe "PolynomialRatio.over" $ do
+    it "simplifies expressions correctly" $ do
+      let p      = Term 3 3 + Term 4 2 - Term 8 1 - 3
+          q      = Term 1 4 + Term 1 3 + Term 3 1 - 9
+          result = (Term 3 1 + 1) `over` (Term 1 2 + 3)
+      p `over` q `shouldBe` result
 

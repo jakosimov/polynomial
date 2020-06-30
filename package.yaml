@@ -24,8 +24,6 @@ dependencies:
 
 library:
   source-dirs: src
-  exposed-modules: Numeric.Polynomial
-
 
 tests:
   polynomial-test:
