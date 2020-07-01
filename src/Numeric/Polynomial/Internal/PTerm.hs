@@ -23,12 +23,12 @@ instance Show PTerm where
             | d == 1     = "x"
             | otherwise  = "x" ++ exponent
           exponent = map asExponent (show d)
-          asExponent c
-            | c == '1'            = '\185'
-            | c == '2'            = '\178'
-            | c == '3'            = '\179'
-            | c `elem` ['4'..'9'] = chr $ ord c + 8256
-            | otherwise           = c
+          asExponent char
+            | char == '1'            = '\185'
+            | char == '2'            = '\178'
+            | char == '3'            = '\179'
+            | char `elem` ['4'..'9'] = chr $ ord char + 8256
+            | otherwise              = char
 
 instance Ord PTerm where
   compare (PTerm c d) (PTerm c' d')
@@ -38,9 +38,11 @@ instance Ord PTerm where
 multiply :: PTerm -> PTerm -> PTerm
 multiply (PTerm c d) (PTerm c' d') = PTerm (c*c') (d+d')
 
+termSignum :: Num a => PTerm -> a
 termSignum (PTerm c _)
   | c > 0     = 1
   | c < 0     = -1
   | otherwise = 0
 
+negateTerm :: PTerm -> PTerm
 negateTerm (PTerm c d) = PTerm (-c) d

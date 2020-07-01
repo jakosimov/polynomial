@@ -10,10 +10,10 @@ instance Show Polynomial where
   show p =
     case getTerms p of
       []   -> ""
-      p:ps -> show p ++ (ps >>= toString)
+      a:as -> show a ++ (as >>= toString)
     where toString term
-            | termSignum term < 1 = " - " ++ show (negateTerm term)
-            | otherwise           = " + " ++ show term
+            | termSignum term == (-1) = " - " ++ show (negateTerm term)
+            | otherwise               = " + " ++ show term
 
 instance Eq Polynomial where
   a == b = getTerms a == getTerms b
@@ -29,31 +29,31 @@ reduce :: [PTerm] -> [PTerm]
 reduce as = filter (not . isZero)
             $ foldl' step []
             $ sort as
-  where isZero (PTerm c d) = c == 0
+  where isZero (PTerm c _) = c == 0
         step [] a = [a]
         step ((PTerm c d):xs) (PTerm c' d')
           | d == d'   = PTerm (c+c') d : xs
-          | otherwise = (PTerm c' d') : (PTerm c d) : xs
+          | otherwise = PTerm c' d' : PTerm c d : xs
 
 instance Num Polynomial where
   a + b = Expr $ reduce (as ++ bs)
     where as = getTerms a
           bs = getTerms b
-          
+
   negate p = Expr $ map negateTerm (getTerms p)
-    
+
   fromInteger a = Term (fromInteger a) 0
-  
+
   a * b = Expr $ reduce $ as >>= multiplyAllBsWith
     where as     = getTerms a
           bs     = getTerms b
           multiplyAllBsWith p = map (multiply p) bs
-          
+
   signum p =
     case getTerms p of
       []  -> 0
-      t:_ -> termSignum t
-      
+      t:_ -> Term (termSignum t) 0
+
   abs p
     | signum p == -1 = negate p
     | otherwise      = p
@@ -73,14 +73,14 @@ degree p =
 
 quotientRemainder :: Polynomial -> Polynomial -> (Polynomial, Polynomial)
 quotientRemainder p q
-  | qs == []            = error "Division by zero"
+  | null qs             = error "Division by zero"
   | degree p < degree q = (nullPolynomial, p)
   | otherwise =
-      let ((Term c d):_)   = ps
-          ((Term c' d'):_) = qs
-          multiplier       = (Term (c/c') (d - d'))
-          p'               = p - multiplier * q
-          (quot, rem)      = quotientRemainder p' q
+      let Term c d:_   = ps
+          Term c' d':_ = qs
+          multiplier   = Term (c/c') (d - d')
+          p'           = p - multiplier * q
+          (quot, rem)  = quotientRemainder p' q
       in (multiplier + quot, rem)
   where ps = termsOf p
         qs = termsOf q

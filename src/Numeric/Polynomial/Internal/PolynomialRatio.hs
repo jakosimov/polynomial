@@ -15,7 +15,7 @@ p `over` q = simplify (PolynomialRatio p q)
 
 centreText :: Int -> String -> String
 centreText n s = padding ++ s ++ padding
-  where padding = take paddingLength $ repeat ' '
+  where padding = replicate paddingLength ' '
         paddingLength = (n - length s) `quot` 2
 
 numerator :: PolynomialRatio -> Polynomial
