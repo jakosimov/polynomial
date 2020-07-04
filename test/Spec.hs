@@ -1,6 +1,12 @@
 import Numeric.Polynomial
-import Test.Hspec (hspec, describe, it, shouldBe)
-import Data.List (findIndex)
+import Test.Hspec (hspec, describe, it, shouldBe, Expectation)
+import Data.List (findIndex, sort)
+
+rationalRootTest :: [Rational] -> Expectation
+rationalRootTest solutions =
+  sort (findRationalRoots polynomial) `shouldBe` sort solutions
+  where factors    = map (\c -> Term 1 1 - Term c 0) solutions
+        polynomial = product factors
 
 main :: IO ()
 main = hspec $ do
@@ -49,4 +55,14 @@ main = hspec $ do
           q      = Term 1 4 + Term 1 3 + Term 3 1 - 9
           result = (Term 3 1 + 1) `over` (Term 1 2 + 3)
       in p `over` q `shouldBe` result
+
+  describe "Polynomial.eval" $
+    it "evalutate polynomials correctly" $
+      let p = Term 3 3 + Term 8 2 - Term 2 1 + Term 99 0
+          x = 2
+      in eval p x `shouldBe` 151
+
+  describe "Polynomial.findRationalRoots" $
+    it "finds rational roots" $
+      rationalRootTest [3/2, (-9)/2, 11/17, 101/49] -- These could be auto-generated
 

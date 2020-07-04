@@ -28,7 +28,7 @@ instance Show PolynomialRatio where
   show (PolynomialRatio p q) = pString' ++ "\n" ++ divisor ++ "\n" ++ qString
     where pString' = centreText length' pString
           qString' = centreText length' qString
-          divisor  = take length' $ repeat '-'
+          divisor  = replicate length' '-'
           length'  = max (length pString) (length qString)
           pString  = show p
           qString  = show q

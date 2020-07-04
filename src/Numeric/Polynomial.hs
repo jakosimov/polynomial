@@ -12,6 +12,10 @@ module Numeric.Polynomial
   , over
   , numerator
   , denominator
+  , eval
+  , findRationalRoots
+  , derive
+  , makeIntegerCoeffs
   ) where
 
 import Numeric.Polynomial.Internal.PolynomialType
@@ -24,6 +28,10 @@ import Numeric.Polynomial.Internal.PolynomialType
   , (<%>)
   , greatestCommonDivisor
   , normalize
+  , eval
+  , findRationalRoots
+  , derive
+  , makeIntegerCoeffs
   )
 
 import Numeric.Polynomial.Internal.PolynomialRatio
