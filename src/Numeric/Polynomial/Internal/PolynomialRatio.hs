@@ -25,13 +25,18 @@ denominator :: PolynomialRatio -> Polynomial
 denominator (PolynomialRatio _ q) = q
 
 instance Show PolynomialRatio where
-  show (PolynomialRatio p q) = pString' ++ "\n" ++ divisor ++ "\n" ++ qString
-    where pString' = centreText length' pString
-          qString' = centreText length' qString
-          divisor  = replicate length' '-'
-          length'  = max (length pString) (length qString)
-          pString  = show p
-          qString  = show q
+  show (PolynomialRatio p q) =
+    if q == 1 then
+      show p
+    else
+     parenthesize p ++ " / " ++ parenthesize q
+    where numberOfTerms = length . termsOf
+          parenthesize p =
+            if numberOfTerms p > 1 then
+              "(" ++ show p ++ ")"
+            else
+              show p
+    
 
 instance Eq PolynomialRatio where -- Kanske är fel, kanske inte förkortar bort konstanter
   r == r' = p == p' && q == q'
