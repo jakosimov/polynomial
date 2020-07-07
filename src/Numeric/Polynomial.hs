@@ -1,11 +1,12 @@
 module Numeric.Polynomial
-  ( Polynomial(Term)
+  ( Polynomial()
   , degree
   , nullPolynomial
   , termsOf
   , quotientRemainder
   , (</>)
   , (<%>)
+  , term
   , greatestCommonDivisor
   , normalize
   , PolynomialRatio
@@ -19,11 +20,12 @@ module Numeric.Polynomial
   ) where
 
 import Numeric.Polynomial.Internal.PolynomialType
-  ( Polynomial(Term)
+  ( Polynomial()
   , degree
   , nullPolynomial
   , termsOf
   , quotientRemainder
+  , term
   , (</>)
   , (<%>)
   , greatestCommonDivisor

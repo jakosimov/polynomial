@@ -1,30 +1,31 @@
 module Numeric.Polynomial.Internal.PolynomialType where
 
-import Numeric.Polynomial.Internal.PTerm
+import Numeric.Polynomial.Internal.Term
 import Data.List (foldl', sort, find)
 import qualified Data.Ratio as Ratio (numerator, denominator)
 import Data.Ratio ((%))
 
-data Polynomial = Term Rational Int
-                | Expr [PTerm]
+newtype Polynomial = Polynomial [Term]
 
-reduce :: [PTerm] -> [PTerm]
+reduce :: [Term] -> [Term]
 reduce as = filter (not . isZero)
             $ foldl' step []
             $ sort as
-  where isZero (PTerm c _) = c == 0
+  where isZero (Term c _) = c == 0
         step [] a = [a]
-        step ((PTerm c d):xs) (PTerm c' d')
-          | d == d'   = PTerm (c+c') d : xs
-          | otherwise = PTerm c' d' : PTerm c d : xs
+        step ((Term c d):xs) (Term c' d')
+          | d == d'   = Term (c+c') d : xs
+          | otherwise = Term c' d' : Term c d : xs
 
-getTerms :: Polynomial -> [PTerm]
-getTerms (Term c d) = reduce [PTerm c d]
-getTerms (Expr as)  = reduce as
+termsOf :: Polynomial -> [Term]
+termsOf (Polynomial as)  = reduce as
+
+term :: Rational -> Int -> Polynomial
+term c d = Polynomial [Term c d]
 
 instance Show Polynomial where
   show p =
-    case getTerms p of
+    case termsOf p of
       []   -> ""
       a:as -> show a ++ (as >>= toString)
     where toString term
@@ -32,46 +33,42 @@ instance Show Polynomial where
             | otherwise               = " + " ++ show term
 
 instance Eq Polynomial where
-  a == b = getTerms a == getTerms b
+  a == b = termsOf a == termsOf b
 
 instance Ord Polynomial where
-  compare a b = compare (getTerms a) (getTerms b)
+  compare a b = compare (termsOf a) (termsOf b)
 
 instance Num Polynomial where
-  a + b = Expr $ reduce (as ++ bs)
-    where as = getTerms a
-          bs = getTerms b
+  a + b = Polynomial $ reduce (as ++ bs)
+    where as = termsOf a
+          bs = termsOf b
 
-  negate p = Expr $ map negateTerm (getTerms p)
+  negate p = Polynomial $ map negateTerm (termsOf p)
 
-  fromInteger a = Term (fromInteger a) 0
+  fromInteger a = term (fromInteger a) 0
 
-  a * b = Expr $ reduce $ as >>= multiplyAllBsWith
-    where as     = getTerms a
-          bs     = getTerms b
+  a * b = Polynomial $ reduce $ as >>= multiplyAllBsWith
+    where as     = termsOf a
+          bs     = termsOf b
           multiplyAllBsWith p = map (multiply p) bs
 
   signum p =
-    case getTerms p of
+    case termsOf p of
       []  -> 0
-      t:_ -> Term (termSignum t) 0
+      t:_ -> term (termSignum t) 0
 
   abs p
     | signum p == -1 = negate p
     | otherwise      = p
 
 nullPolynomial :: Polynomial
-nullPolynomial = Expr []
-
-termsOf :: Polynomial -> [Polynomial]
-termsOf = map asPolynomialTerm . getTerms
-  where asPolynomialTerm (PTerm c d) = Term c d
+nullPolynomial = Polynomial []
 
 degree :: Polynomial -> Int
 degree p =
-  case getTerms p of
-    (PTerm _ d):_ -> d
-    []            -> -1
+  case termsOf p of
+    (Term _ d):_ -> d
+    []           -> -1
 
 quotientRemainder :: Polynomial -> Polynomial -> (Polynomial, Polynomial)
 quotientRemainder p q
@@ -80,7 +77,7 @@ quotientRemainder p q
   | otherwise =
       let Term c d:_   = ps
           Term c' d':_ = qs
-          multiplier   = Term (c/c') (d - d')
+          multiplier   = term (c/c') (d - d')
           p'           = p - multiplier * q
           (quot, rem)  = quotientRemainder p' q
       in (multiplier + quot, rem)
@@ -95,9 +92,9 @@ p <%> q = snd $ quotientRemainder p q
 
 normalize :: Polynomial -> Polynomial
 normalize p =
-  case getTerms p of
-    []            -> nullPolynomial
-    (PTerm c _):_ -> Term (1/c) 0 * p
+  case termsOf p of
+    []           -> nullPolynomial
+    (Term c _):_ -> term (1/c) 0 * p
 
 greatestCommonDivisor :: Polynomial -> Polynomial -> Polynomial
 greatestCommonDivisor p q
@@ -108,23 +105,23 @@ greatestCommonDivisor p q
 
 eval :: Real a => Polynomial -> a -> Rational
 eval p x =
-  case getTerms p of
-    []             -> 0
-    PTerm c d : ps -> c * toRational x^d + eval (Expr ps) x
+  case termsOf p of
+    []            -> 0
+    Term c d : ps -> c * toRational x^d + eval (Polynomial ps) x
 
 derive :: Polynomial -> Polynomial
 derive p =
-  case getTerms p of
+  case termsOf p of
     []             -> 0
-    PTerm c d : ps -> Term (c * toRational d) (d-1) + derive (Expr ps)
+    Term c d : ps -> term (c * toRational d) (d-1) + derive (Polynomial ps)
 
 isConstant :: Polynomial -> Bool
 isConstant p = degree p < 1
 
 termsLowestCommonDenominator :: Polynomial -> Integer
 termsLowestCommonDenominator p =
-  foldl' lcm 1 $ map denominatorOf (getTerms p)
-  where denominatorOf (PTerm c _) = Ratio.denominator c
+  foldl' lcm 1 $ map denominatorOf (termsOf p)
+  where denominatorOf (Term c _) = Ratio.denominator c
 
 makeIntegerCoeffs :: Polynomial -> Polynomial
 makeIntegerCoeffs p = p * fromInteger (termsLowestCommonDenominator p)
@@ -132,19 +129,19 @@ makeIntegerCoeffs p = p * fromInteger (termsLowestCommonDenominator p)
 divides :: Integer -> Integer -> Bool
 a `divides` b = b `mod` a == 0
 
-findConstantTerm :: Polynomial -> Maybe PTerm
+findConstantTerm :: Polynomial -> Maybe Term
 findConstantTerm p =
-  find (\(PTerm _ d) -> d == 0) (getTerms p)
+  find (\(Term _ d) -> d == 0) (termsOf p)
 
 findRationalRoots :: Polynomial -> [Rational]
 findRationalRoots p =
-  case getTerms p' of
-    []                     -> [0]
-    PTerm highestCoeff _:_ ->
+  case termsOf p' of
+    []                    -> [0]
+    Term highestCoeff _:_ ->
       case findConstantTerm p' of
         Nothing ->
-          0 : findRationalRoots (p </> Term 1 1)
-        Just (PTerm constantCoeff _) ->
+          0 : findRationalRoots (p </> term 1 1)
+        Just (Term constantCoeff _) ->
           let highestCoeff' = abs $ Ratio.numerator highestCoeff
               constantCoeff' = abs $ Ratio.numerator constantCoeff
               numers  = filter (`divides` constantCoeff') [1..constantCoeff'] -- Numerators for the solution

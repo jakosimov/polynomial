@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4a56c1f4bbf6bdbcaf68823a472986b14c85d748437d876566a0924294e58625
+-- hash: ef38a2591a422f0ce5545b549a08b31158d509e4ef3295b02a490605dbc8016d
 
 name:           polynomial
 version:        0.1.0.0
@@ -30,7 +30,7 @@ library
       Numeric.Polynomial
       Numeric.Polynomial.Internal.PolynomialRatio
       Numeric.Polynomial.Internal.PolynomialType
-      Numeric.Polynomial.Internal.PTerm
+      Numeric.Polynomial.Internal.Term
   other-modules:
       Paths_polynomial
   hs-source-dirs:

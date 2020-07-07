@@ -1,9 +1,9 @@
-module Numeric.Polynomial.Internal.PTerm where
+module Numeric.Polynomial.Internal.Term where
 
 import Data.Char (ord, chr)
 import qualified Data.Ratio as Ratio (denominator, numerator)
 
-data PTerm = PTerm Rational Int deriving Eq
+data Term = Term Rational Int deriving Eq
 
 showRational :: Rational -> String
 showRational q
@@ -12,8 +12,8 @@ showRational q
   where d = Ratio.denominator q
         n = Ratio.numerator q
 
-instance Show PTerm where
-  show (PTerm c d) = prefix ++ postfix
+instance Show Term where
+  show (Term c d) = prefix ++ postfix
     where prefix
             | c == 1 && d /= 0    = ""
             | c == (-1) && d /= 0 = "-"
@@ -30,19 +30,19 @@ instance Show PTerm where
             | char `elem` ['4'..'9'] = chr $ ord char + 8256
             | otherwise              = char
 
-instance Ord PTerm where
-  compare (PTerm c d) (PTerm c' d')
+instance Ord Term where
+  compare (Term c d) (Term c' d')
     | d == d'   = compare c c'
     | otherwise = compare d d'
 
-multiply :: PTerm -> PTerm -> PTerm
-multiply (PTerm c d) (PTerm c' d') = PTerm (c*c') (d+d')
+multiply :: Term -> Term -> Term
+multiply (Term c d) (Term c' d') = Term (c*c') (d+d')
 
-termSignum :: Num a => PTerm -> a
-termSignum (PTerm c _)
+termSignum :: Num a => Term -> a
+termSignum (Term c _)
   | c > 0     = 1
   | c < 0     = -1
   | otherwise = 0
 
-negateTerm :: PTerm -> PTerm
-negateTerm (PTerm c d) = PTerm (-c) d
+negateTerm :: Term -> Term
+negateTerm (Term c d) = Term (-c) d

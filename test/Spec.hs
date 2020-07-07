@@ -5,60 +5,60 @@ import Data.List (findIndex, sort)
 rationalRootTest :: [Rational] -> Expectation
 rationalRootTest solutions =
   sort (findRationalRoots polynomial) `shouldBe` sort solutions
-  where factors    = map (\c -> Term 1 1 - Term c 0) solutions
+  where factors    = map (\c -> term 1 1 - term c 0) solutions
         polynomial = product factors
 
 main :: IO ()
 main = hspec $ do
   describe "Polynomial arithmitic" $
     it "can handle nested addition, subtraction and multiplication" $
-      (Term 1 1 - Term 1 0) * (Term 1 1 - Term 1 0) `shouldBe` Term 1 2 - Term 2 1 + Term 1 0
+      (term 1 1 - term 1 0) * (term 1 1 - term 1 0) `shouldBe` term 1 2 - term 2 1 + term 1 0
     
   describe "show Polynomial" $ do
 
     it "can handle simple expressions" $ do
-      show ((Term 1 1 + Term 1 0) * (Term 1 1 + Term 1 0)) `shouldBe`  "x² + 2x + 1"
-      show (Term 2 0 * (Term 4 2 + Term 1 1)) `shouldBe` "8x² + 2x"
+      show ((term 1 1 + term 1 0) * (term 1 1 + term 1 0)) `shouldBe`  "x² + 2x + 1"
+      show (term 2 0 * (term 4 2 + term 1 1)) `shouldBe` "8x² + 2x"
 
     it "can handle frationals" $
-      show (Term (2/3) 0 * (Term 4 2 + Term 1 1)) `shouldBe` "(8/3)x² + (2/3)x"
+      show (term (2/3) 0 * (term 4 2 + term 1 1)) `shouldBe` "(8/3)x² + (2/3)x"
 
 
   describe "normalize Polynomial" $
     it "removes leading coefficient" $
-      normalize (Term 2 2 + Term 2 1 + 1) `shouldBe` (Term 1 2 + Term 1 1 + Term (1/2) 0)
+      normalize (term 2 2 + term 2 1 + 1) `shouldBe` (term 1 2 + term 1 1 + term (1/2) 0)
 
   describe "Polynomial.quotientRemainder" $ do
-    let f = Term 1 4 + Term 2 3 + Term 11 2 + Term 2 1 + 10
-        g = Term 1 3 - Term 1 2 - Term 4 1 - 6
+    let f = term 1 4 + term 2 3 + term 11 2 + term 2 1 + 10
+        g = term 1 3 - term 1 2 - term 4 1 - 6
 
     it "returns correct quotient" $
-      f </> g `shouldBe` Term 1 1 + 3
+      f </> g `shouldBe` term 1 1 + 3
 
     it "returns correct remainder" $
-      f <%> g `shouldBe` Term 18 2 + Term 20 1 + 28
+      f <%> g `shouldBe` term 18 2 + term 20 1 + 28
 
 
   describe "Polynomial.greatestcommondivisor" $
     it "returns correct greatest common divisor" $ do
-      let f = Term 4 4 + Term 5 3 + Term 8 2 + Term 12 1 + 5
-          g = Term 9 6 + Term 9 5 + Term 3 3 + Term 3 2 + Term 19 1 + 19
-      greatestCommonDivisor f g `shouldBe` (Term 1 1 + 1)
+      let f = term 4 4 + term 5 3 + term 8 2 + term 12 1 + 5
+          g = term 9 6 + term 9 5 + term 3 3 + term 3 2 + term 19 1 + 19
+      greatestCommonDivisor f g `shouldBe` (term 1 1 + 1)
 
-      let f' = Term 3 5 + Term 6 4 + Term 8 3 + Term 13 2 + Term 11 1 + 3
-          g' = Term 2 4 + Term 10 3 + Term 17 2 + Term 12 1 + 3
-      greatestCommonDivisor f' g' `shouldBe` (Term 1 2 + Term 2 1 + 1)
+      let f' = term 3 5 + term 6 4 + term 8 3 + term 13 2 + term 11 1 + 3
+          g' = term 2 4 + term 10 3 + term 17 2 + term 12 1 + 3
+      greatestCommonDivisor f' g' `shouldBe` (term 1 2 + term 2 1 + 1)
 
   describe "PolynomialRatio.over" $
     it "simplifies expressions correctly" $
-      let p      = Term 3 3 + Term 4 2 - Term 8 1 - 3
-          q      = Term 1 4 + Term 1 3 + Term 3 1 - 9
-          result = (Term 3 1 + 1) `over` (Term 1 2 + 3)
+      let p      = term 3 3 + term 4 2 - term 8 1 - 3
+          q      = term 1 4 + term 1 3 + term 3 1 - 9
+          result = (term 3 1 + 1) `over` (term 1 2 + 3)
       in p `over` q `shouldBe` result
 
   describe "Polynomial.eval" $
     it "evalutate polynomials correctly" $
-      let p = Term 3 3 + Term 8 2 - Term 2 1 + Term 99 0
+      let p = term 3 3 + term 8 2 - term 2 1 + term 99 0
           x = 2
       in eval p x `shouldBe` 151
 
