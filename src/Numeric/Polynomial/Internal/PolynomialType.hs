@@ -8,6 +8,20 @@ import Data.Ratio ((%))
 data Polynomial = Term Rational Int
                 | Expr [PTerm]
 
+reduce :: [PTerm] -> [PTerm]
+reduce as = filter (not . isZero)
+            $ foldl' step []
+            $ sort as
+  where isZero (PTerm c _) = c == 0
+        step [] a = [a]
+        step ((PTerm c d):xs) (PTerm c' d')
+          | d == d'   = PTerm (c+c') d : xs
+          | otherwise = PTerm c' d' : PTerm c d : xs
+
+getTerms :: Polynomial -> [PTerm]
+getTerms (Term c d) = reduce [PTerm c d]
+getTerms (Expr as)  = reduce as
+
 instance Show Polynomial where
   show p =
     case getTerms p of
@@ -22,20 +36,6 @@ instance Eq Polynomial where
 
 instance Ord Polynomial where
   compare a b = compare (getTerms a) (getTerms b)
-
-getTerms :: Polynomial -> [PTerm]
-getTerms (Term c d) = reduce [PTerm c d]
-getTerms (Expr as)  = reduce as
-
-reduce :: [PTerm] -> [PTerm]
-reduce as = filter (not . isZero)
-            $ foldl' step []
-            $ sort as
-  where isZero (PTerm c _) = c == 0
-        step [] a = [a]
-        step ((PTerm c d):xs) (PTerm c' d')
-          | d == d'   = PTerm (c+c') d : xs
-          | otherwise = PTerm c' d' : PTerm c d : xs
 
 instance Num Polynomial where
   a + b = Expr $ reduce (as ++ bs)
@@ -156,4 +156,3 @@ findRationalRoots p =
                 , eval p' q == 0
                 ]
   where p' = makeIntegerCoeffs p
-
